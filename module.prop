@@ -1,6 +1,6 @@
-id=template
-name=Template Module
+id=AudModLib
+name=Audio Modification Library
 version=v1
 versionCode=1
-author=topjohnwu
+author=ahrion
 description=A short description

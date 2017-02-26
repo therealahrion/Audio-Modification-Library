@@ -4,6 +4,15 @@
 # Functions
 ##########################################################################################
 
+# FILE LOCATIONS
+CONFIG_FILE=/system/etc/audio_effects.conf
+VENDOR_CONFIG=/system/vendor/etc/audio_effects.conf
+HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
+OTHER_VENDOR_FILE=/system/etc/audio_effects_vendor.conf
+OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
+
+AUDMODLIB=/cache/audmodlib
+
 ui_print() {
   if ($BOOTMODE); then
     echo "$1"
@@ -113,6 +122,16 @@ target_size_check() {
 ##########################################################################################
 # Flashable update-binary preparation
 ##########################################################################################
+
+aud_mod_lib() {
+  for CFG in $AUDMODLIB$CONFIG_FILE $AUDMODLIB$VENDOR_CONFIG $AUDMODLIB$HTC_CONFIG_FILE $AUDMODLIB$OTHER_VENDOR_FILE $AUDMODLIB$OFFLOAD_CONFIG; do
+    mkdir -p $MODPATH${CFG%/*}
+  done
+
+  for CFG in $AUDMODLIB$CONFIG_FILE $AUDMODLIB$VENDOR_CONFIG $AUDMODLIB$HTC_CONFIG_FILE $AUDMODLIB$OTHER_VENDOR_FILE $AUDMODLIB$OFFLOAD_CONFIG; do
+    cp -af $CFG $MODPATH$CFG
+  done
+}
 
 OUTFD=$2
 ZIP=$3
@@ -261,6 +280,7 @@ mkdir -p $MODPATH
 # Copy files
 ui_print "- Copying files"
 unzip -o "$ZIP" "system/*" -d $MODPATH
+aud_mod_lib
 
 # Handle replace folders
 for TARGET in $REPLACE; do
