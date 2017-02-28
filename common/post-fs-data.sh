@@ -25,8 +25,8 @@ aud_mod_lib() {
   done
 }
 
-  rm -f /magisk/audmodlib/update
-  if ! cmp -s $AUDMODLIB/system/etc/audio_effects.conf /magisk/audmodlib/system/etc/audio_effects.conf; then
-    aud_mod_lib
-    reboot
-  fi
+rm -f /magisk/audmodlib/update
+if ! cmp -s $AUDMODLIB/system/etc/audio_effects.conf /magisk/audmodlib/system/etc/audio_effects.conf; then
+  aud_mod_lib
+  reboot
+fi
