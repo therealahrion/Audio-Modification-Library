@@ -1,20 +1,52 @@
 #!/sbin/sh
 
+# Detect whether in boot mode
+ps | grep zygote | grep -v grep >/dev/null && BOOTMODE=true || BOOTMODE=false
+
+# Default permissions
+umask 022
+
 ##########################################################################################
 # Functions
 ##########################################################################################
 
-# FILE LOCATIONS
-CONFIG_FILE=/system/etc/audio_effects.conf
-VENDOR_CONFIG=/system/vendor/etc/audio_effects.conf
-HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
-OTHER_VENDOR_FILE=/system/etc/audio_effects_vendor.conf
-OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
+safe_mount() {
+  IS_MOUNT=$(cat /proc/mounts | grep "$1")
+  if [ "$IS_MOUNT" ]; then
+    mount -o rw,remount $1
+  else
+    mount $1
+  fi
+}
 
-AUDMODLIB=/cache/audmodlib
+safe_mount /system
+
+SLOT=$(getprop ro.boot.slot_suffix 2>/tmp/null)
+if [ "$SLOT" ]; then
+  safe_mount /system/system
+  SYSTEM=/system/system
+else
+  SYSTEM=/system
+fi
+
+if [ ! -d "$SYSTEM/vendor" ] || [ -L "$SYSTEM/vendor" ]; then
+  safe_mount /vendor
+  VENDOR=/vendor
+elif [ -d "$SYSTEM/vendor" ] || [ -L "/vendor" ]; then
+  safe_mount $SYSTEM/vendor
+  VENDOR=$SYSTEM/vendor
+fi
+
+suimg=$(ls /cache/su.img /data/su.img 2>/dev/null);
+
+if [ -d $SYSTEM/priv-app ]; then
+  APPDIR=priv-app
+else
+  APPDIR=app
+fi
 
 ui_print() {
-  if ($BOOTMODE); then
+  if $BOOTMODE; then
     echo "$1"
   else 
     echo -n -e "ui_print $1\n" >> /proc/self/fd/$OUTFD
@@ -27,9 +59,9 @@ grep_prop() {
   shift
   FILES=$@
   if [ -z "$FILES" ]; then
-    FILES='/system/build.prop'
+    FILES="$SYSTEM/build.prop"
   fi
-  cat $FILES 2>/dev/null | sed -n $REGEX | head -n 1
+  cat $FILES 2>/dev/null | sed -n "$REGEX" | head -n 1
 }
 
 is_mounted() {
@@ -41,10 +73,18 @@ is_mounted() {
   return $?
 }
 
+sys_is_mounted() {
+  case `mount` in
+    *" $1 "*) echo 1;;
+    *) echo 0;;
+  esac;
+}
+
 mount_image() {
   if [ ! -d "$2" ]; then
+    mount -o rw,remount rootfs /
     mkdir -p $2 2>/dev/null
-    chmod 755 $2
+    ($BOOTMODE) && mount -o ro,remount rootfs /
     [ ! -d "$2" ] && return 1
   fi
   if (! is_mounted $2); then
@@ -53,20 +93,20 @@ mount_image() {
       if (! is_mounted $2); then
         LOOPDEVICE=/dev/block/loop$LOOP
         if [ ! -f "$LOOPDEVICE" ]; then
-          mknod $LOOPDEVICE b 7 $LOOP
+          mknod $LOOPDEVICE b 7 $LOOP 2>/dev/null
         fi
         losetup $LOOPDEVICE $1
         if [ "$?" -eq "0" ]; then
           mount -t ext4 -o loop $LOOPDEVICE $2
           if (! is_mounted $2); then
-            /system/bin/toolbox mount -t ext4 -o loop $LOOPDEVICE $2
+            $SYSTEM/bin/toolbox mount -t ext4 -o loop $LOOPDEVICE $2
           fi
           if (! is_mounted $2); then
-            /system/bin/toybox mount -t ext4 -o loop $LOOPDEVICE $2
+            $SYSTEM/bin/toybox mount -t ext4 -o loop $LOOPDEVICE $2
           fi
         fi
         if (is_mounted $2); then
-          ui_print "- Mounting $1 to $2"
+          ui_print "    Mounting $1 to $2..."
           break;
         fi
       fi
@@ -77,7 +117,7 @@ mount_image() {
 set_perm() {
   chown $2:$3 $1 || exit 1
   chmod $4 $1 || exit 1
-  if [ "$5" ]; then
+  if [ ! -z "$5" ]; then
     chcon $5 $1 2>/dev/null
   else
     chcon 'u:object_r:system_file:s0' $1 2>/dev/null
@@ -93,6 +133,16 @@ set_perm_recursive() {
   done
 }
 
+sys_mk_ch() { 
+  mkdir -p "$1"
+  chmod "$2" "$1"
+}
+
+sys_cp_ch() {
+  cp "$1" "$2"
+  chmod "$3" "$2"
+}
+
 mktouch() {
   mkdir -p ${1%/*}
   if [ -z "$2" ]; then
@@ -103,38 +153,198 @@ mktouch() {
   chmod 644 $1
 }
 
-payload_size_check() {
-  reqSizeM=0;
-  for entry in $(unzip -l "$@" 2>/dev/null | tail -n +4 | awk '{ print $1 }'); do
-    test $entry != "--------" && reqSizeM=$((reqSizeM + entry)) || break;
-  done;
-  test $reqSizeM -lt 1048576 && reqSizeM=1 || reqSizeM=$((reqSizeM / 1048576));
+request_size_check() {
+  reqSizeM=`unzip -l "$1" 2>/dev/null | tail -n 1 | awk '{ print $1 }'`
+  reqSizeM=$((reqSizeM / 1048576 + 1))
 }
 
-target_size_check() {
-  e2fsck -p -f $1
-  curBlocks=`e2fsck -n $1 2>/dev/null | cut -d, -f3 | cut -d\  -f2`;
-  curUsedM=$((`echo "$curBlocks" | cut -d/ -f1` * 4 / 1024));
-  curSizeM=$((`echo "$curBlocks" | cut -d/ -f2` * 4 / 1024));
-  curFreeM=$((curSizeM - curUsedM));
+image_size_check() {
+  e2fsck -yf $1
+  curBlocks=`e2fsck -n $1 2>/dev/null | grep $1 | cut -d, -f3 | cut -d\  -f2`;
+  curUsedM=`echo "$curBlocks" | cut -d/ -f1`
+  curSizeM=`echo "$curBlocks" | cut -d/ -f1`
+  curFreeM=$(((curSizeM - curUsedM) * 4 / 1024))
+  curUsedM=$((curUsedM * 4 / 1024 + 1))
+  curSizeM=$((curSizeM * 4 / 1024))
 }
 
 ##########################################################################################
 # Flashable update-binary preparation
 ##########################################################################################
 
-aud_mod_lib() {
-  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG; do
-    mkdir -p $MODPATH${CFG%/*}
-  done
-
-  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG; do
-    cp -af $AUDMODLIB$CFG $MODPATH$CFG
-  done
-}
-
 OUTFD=$2
 ZIP=$3
+
+### FILE LOCATIONS ###
+# AUDIO EFFECTS
+CONFIG_FILE=$SYSTEM/etc/audio_effects.conf
+VENDOR_CONFIG=$VENDOR/etc/audio_effects.conf
+HTC_CONFIG_FILE=$SYSTEM/etc/htc_audio_effects.conf
+OTHER_VENDOR_FILE=$SYSTEM/etc/audio_effects_vendor.conf
+OFFLOAD_CONFIG=$SYSTEM/etc/audio_effects_offload.conf
+# AUDIO POLICY
+AUD_POL=$SYSTEM/etc/audio_policy.conf
+AUD_POL_CONF=$SYSTEM/etc/audio_policy_configuration.xml
+AUD_OUT_POL=$VENDOR/etc/audio_output_policy.conf
+V_AUD_POL=$VENDOR/etc/audio_policy.conf
+
+magisk_install() {
+  MAGISK=true
+  MK_PRFX="mkdir -p"
+  CP_PRFX="cp -af"
+  UNIFY="$MODPATH"
+  MK_SFFX=""
+  CP_SFFX=""
+  PATCHINSTALL="$TMPAUDMODLIBDIR"
+  PATCH="/cache/magisk/audmodlib"
+}
+
+system_install() {
+  MAGISK=false
+  MK_PRFX="sys_mk_ch"
+  CP_PRFX="sys_cp_ch"
+  UNIFY=""
+  MK_SFFX=" 0755"
+  CP_SFFX=" 0644"
+  PATCHINSTALL=""
+  PATCH=""
+}
+
+##########################################################################################
+# 
+# Instructions:
+# 
+# 1. This is a Unified installer for both Magisk and System install, so be sure to
+#    follow the template provided for "app_install_logic", "system_mod_wipe",
+#    & "unified_mod_<xxxx>"
+# 2. magisk_audmodlib and files with the audmodlib prefix as such need to remain
+#    untouched unless an update has occured, however use unified_mod_patch to remove
+#    and then add the lines corresponding to your mod
+# 3. If applicable, make "APP1", etc. to be the same name as your .apk/app folder
+#    in system/app/ (i.e. APP1=Ax, APP2=ViPER4Android, APP3=AM3DZirene and so on)
+# 4. common/$MODID.sh, system/addon.d/99$MODID.sh & system/su.d/50$MODID.sh app specific
+#    scripts will be named the same as your MODID in config.sh (i.e. MODID=v4afx so
+#    common/$MODID.sh=v4afx.sh)
+# 5. Edit common/$MODID.sh to remove or restore the specific audio_effects or
+#    audio_policy files that were added in the unified_mod_patch portion of the installer
+# 6. You can obviously use your mod specific system.prop or post-fs-data.sh as part of
+#    the mod, but make sure not edit the designated audmodlib specific files
+# 7. DO NOT delete any of the credits for @ahrion or @topjohnwu mentioned in this script
+# 
+##########################################################################################
+
+unified_mod_directory() {
+  ########################################################################################
+  # Make directories for Unified install
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  #### PREPARE INSTALL ####
+  ui_print " "
+  ui_print "- Preparing installation -"
+
+  # CREATING DIRECTORIES
+  ui_print "   Creating directories..."
+  
+  if [ "$MAGISK" = true ]; then
+    rm -rf $MODPATH 2>/dev/null
+    mkdir -p $MODPATH
+  fi
+  ########## ^ DO NOT REMOVE ^ ##########
+  
+  #### v INSERT YOUR DIRECTORY MAKING v ####
+  #### ^ INSERT YOUR DIRECTORY MAKING ^ ####
+}
+
+magisk_audmodlib() {
+   ########################################################################################
+  # Audio Modification Library / This is where the magick happens for Magisk
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  ### CREATE AUDIO MODIFICATION LIBRARY ###
+  ui_print " "
+  ui_print "- Installing Audio Modification Library -"
+
+  if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+    rm -rf /cache/magisk/audmodlib
+  fi
+
+  if [ ! -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+    TMPAUDMODLIBDIR=""
+  elif [ -d $AUDMODLIBPATH ]; then
+    TMPAUDMODLIBDIR=$AUDMODLIBPATH
+  elif [ -d /magisk/audmodlib ]; then
+    TMPAUDMODLIBDIR=/magisk/audmodlib
+  fi
+  
+  magisk_install
+
+  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+    if [ -f $CFG ]; then
+      mkdir -p /cache/magisk/audmodlib${CFG%/*}
+	fi
+  done
+
+  for CFG in $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+    if [ ! -f $CFG.bak ]; then
+      cp -af $CFG /cache/magisk/audmodlib$CFG.bak
+    else
+	  cp -af $CFG.bak /cache/magisk/audmodlib$CFG.bak
+    fi
+  done
+
+  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+    if [ -f $CFG ]; then
+      cp -af $TMPAUDMODLIBDIR$CFG /cache/magisk/audmodlib$CFG
+	fi
+  done
+
+  if [ -f $VENDOR_CONFIG ]; then
+    cp -af /cache/magisk/audmodlib$CONFIG_FILE /cache/magisk/audmodlib$VENDOR_CONFIG
+  fi
+  
+  set_perm_recursive  /cache/magisk/audmodlib  0  0  0755  0644
+
+  mkdir -p $AUDMODLIBPATH
+
+  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+    if [ -f $CFG ]; then
+      mkdir -p $AUDMODLIBPATH${CFG%/*}
+	fi
+  done
+
+  unified_mod_patch
+  
+  for CFG in $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+    if [ -f $CFG ]; then
+      cp -af /cache/magisk/audmodlib$CFG.bak $AUDMODLIBPATH$CFG.bak
+	fi
+  done
+  
+  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+    if [ -f $CFG ]; then
+      cp -af /cache/magisk/audmodlib$CFG $AUDMODLIBPATH$CFG
+	fi
+  done
+
+  ui_print "   ! AudModLib framework by ahrion @ XDA !"
+  ########## ^ DO NOT REMOVE ^ ##########
+}
+
+unified_mod_patch() {
+  ########################################################################################
+  # Audio Modification Library file patcher for Unified install
+  ########################################################################################
+
+  ########## v DO NOT REMOVE v ##########
+  #### PATCHING FILES ####
+  ui_print "   Patching necessary cfg files..."
+  ########## ^ DO NOT REMOVE ^ ##########
+
+  #### v INSERT YOUR FILE PATCHES v ####
+  #### ^ INSERT YOUR FILE PATCHES ^ ####
+}
 
 readlink /proc/$$/fd/$OUTFD 2>/dev/null | grep /tmp >/dev/null
 if [ "$?" -eq "0" ]; then
@@ -152,24 +362,21 @@ if [ "$?" -eq "0" ]; then
   done
 fi
 
-if [ -z "$BOOTMODE" ]; then
-  BOOTMODE=false
-fi
-
-if ($BOOTMODE) && (! is_mounted /magisk); then
-  ui_print "! Magisk is not activated!... abort"
+if $BOOTMODE && ! is_mounted /magisk; then
+  ui_print "   ! Magisk is not activated!... abort"
   exit 1
 fi
 
 # Fix SuperSU.....
-($BOOTMODE) && /data/magisk/sepolicy-inject -s fsck --live
+$BOOTMODE && $BINDIR/sepolicy-inject --live "allow fsck * * *"
 
-TMPDIR=/tmp
+# This path should work in any cases
+TMPDIR=/dev/tmp
+
 MOUNTPATH=/magisk
 IMGNAME=magisk.img
 
-if ($BOOTMODE); then
-  TMPDIR=/dev/tmp
+if $BOOTMODE; then
   MOUNTPATH=/dev/magisk_merge
   IMGNAME=magisk_merge.img
 fi
@@ -179,7 +386,7 @@ cd $TMPDIR
 unzip -o "$ZIP" config.sh
 
 if [ ! -f "config.sh" ]; then
-  ui_print "! Failed: Unable to extract zip file!"
+  ui_print "   ! Failed: Unable to extract zip file!"
   exit 1
 fi
 
@@ -187,10 +394,12 @@ source config.sh
 
 INSTALLER=$TMPDIR/$MODID
 MODPATH=$MOUNTPATH/$MODID
+AUDMODLIBPATH=$MOUNTPATH/$AUDMODLIBID
 
 mkdir -p $INSTALLER
 cd $INSTALLER
 unzip -o "$ZIP" "common/*" module.prop
+unzip -o "$ZIP" "system/*"
 
 ##########################################################################################
 # Main
@@ -199,26 +408,58 @@ unzip -o "$ZIP" "common/*" module.prop
 # Print mod name
 print_modname
 
-# Please leave this message in your flashable zip for credits :)
-ui_print "******************************"
-ui_print "Powered by Magisk (@topjohnwu)"
-ui_print "******************************"
+#### MOUNT FILESYSTEMS ####
+ui_print "- Mounting filesystems -"
 
-ui_print "- Mounting /system(ro), /vendor(ro), /data, /cache"
-mount -o ro /system 2>/dev/null
-mount -o ro /vendor 2>/dev/null
-mount /data 2>/dev/null
+ui_print "   Mounting /cache..."
 mount /cache 2>/dev/null
+mount -o rw,remount /cache 2>/dev/null
+mount -o rw,remount /cache /cache 2>/dev/null
+ui_print "   Mounting /data..."
+mount /data 2>/dev/null
+mount -o rw,remount /data 2>/dev/null
+mount -o rw,remount /data /data 2>/dev/null
 
-if [ ! -f '/system/build.prop' ]; then
-  ui_print "! Failed: /system could not be mounted!"
+if [ "$suimg" ]; then
+  if [ "$(sys_is_mounted /su)" == 0 ]; then
+    ui_print "   Mounting /su...";
+    test ! -e /su && mkdir /su;
+    mount -t ext4 -o rw,noatime $suimg /su 2>/dev/null
+    for i in 0 1 2 3 4 5 6 7; do
+      test "$(sys_is_mounted /su)" == 1 && break;
+      loop=/dev/block/loop$i;
+	  mknod $loop b 7 $i;
+	  losetup $loop $suimg;
+	  mount -t ext4 -o loop $loop /su; 2>/dev/null
+    done;
+  fi;
+fi;
+
+if [ -f /data/magisk.img ] || [ -d /magisk ]; then
+  WRITE=ro
+else
+  WRITE=rw
+fi
+
+ui_print "   Mounting $SYSTEM($WRITE)..."
+mount -o $WRITE $SYSTEM 2>/dev/null
+mount -o $WRITE,remount $SYSTEM 2>/dev/null
+mount -o $WRITE,remount $SYSTEM $SYSTEM 2>/dev/null
+ui_print "   Mounting $VENDOR($WRITE)..."
+mount -o $WRITE $VENDOR 2>/dev/null
+mount -o $WRITE,remount $VENDOR 2>/dev/null
+mount -o $WRITE,remount $VENDOR $VENDOR 2>/dev/null
+
+if [ ! -f "$SYSTEM/build.prop" ]; then
+  ui_print "   ! Failed: $SYSTEM could not be mounted!"
   exit 1
 fi
 
-API=$(grep_prop ro.build.version.sdk)
-ABI=$(grep_prop ro.product.cpu.abi | cut -c-3)
-ABI2=$(grep_prop ro.product.cpu.abi2 | cut -c-3)
-ABILONG=$(grep_prop ro.product.cpu.abi)
+API=`grep_prop ro.build.version.sdk`
+ABI=`grep_prop ro.product.cpu.abi | cut -c-3`
+ABI2=`grep_prop ro.product.cpu.abi2 | cut -c-3`
+ABILONG=`grep_prop ro.product.cpu.abi`
+MIUIVER=`grep_prop ro.miui.ui.version.name`
 
 ARCH=arm
 IS64BIT=false
@@ -230,13 +471,23 @@ if [ "$ABILONG" = "x86_64" ]; then ARCH=x64; IS64BIT=true; fi;
 # You can get the Android API version from $API, the CPU architecture from $ARCH
 # Useful if you are creating Android version / platform dependent mods
 
-IMG=
-if (is_mounted /data); then
+if is_mounted /data; then
   IMG=/data/$IMGNAME
   if [ ! -f "/data/magisk.img" ]; then
-    ui_print "! Magisk is not installed!"
-    ui_print "! Magisk is required for this mod!"
-    exit 1
+    ui_print " "
+    ui_print "   ! Magisk is not installed!"
+    ui_print "    ! Magisk is required for this mod!"
+    #### COMPLETING INSTALL ####
+    umount /data
+    umount /su
+    umount $SYSTEM
+    umount $VENDOR
+    ui_print " "
+    ui_print "    -------- INSTALLATION UNSUCCESSFUL --------"
+    ui_print " "
+    ui_print "Installer brought to you by ahrion @ XDA"
+	ui_print " "
+	exit 0;
   fi
 else
   IMG=/cache/magisk.img
@@ -251,91 +502,106 @@ else
   ui_print " "
 fi
 
-payload_size_check "$ZIP" "*"
+request_size_check "$ZIP"
 
 if [ -f "$IMG" ]; then
-  ui_print "- $IMG detected!"
-  target_size_check $IMG
+  ui_print "   $IMG detected!"
+  image_size_check $IMG
   if [ "$reqSizeM" -gt "$curFreeM" ]; then
-    SIZE=$((((reqSizeM + curUsedM) / 32 + 2) * 32))
-    ui_print "- Resizing $IMG to ${SIZE}M..."
+    SIZE=$(((reqSizeM + curUsedM) / 32 * 32 + 64))
+    ui_print "    Resizing $IMG to ${SIZE}M..."
     resize2fs $IMG ${SIZE}M
   fi
 else
-  SIZE=$(((reqSizeM / 32 + 2) * 32));
-  ui_print "- Creating $IMG with size ${SIZE}M"
+  SIZE=$((reqSizeM / 32 * 32 + 64));
+  ui_print "   Creating $IMG with size ${SIZE}M..."
   make_ext4fs -l ${SIZE}M -a /magisk -S $INSTALLER/common/file_contexts_image $IMG
 fi
 
 mount_image $IMG $MOUNTPATH
-if (! is_mounted $MOUNTPATH); then
-  ui_print "! $IMG mount failed... abort"
+if ! is_mounted $MOUNTPATH; then
+  ui_print "   ! $IMG mount failed... abort"
   exit 1
 fi
 
-# Create mod paths
-rm -rf $MODPATH 2>/dev/null
-mkdir -p $MODPATH
+# Prepare install
+magisk_install
 
-# Copy files
-ui_print "- Copying files"
-unzip -o "$ZIP" "system/*" -d $MODPATH
-aud_mod_lib
+# Create mod paths
+unified_mod_directory
+
+# Patch files
+magisk_audmodlib
 
 # Handle replace folders
 for TARGET in $REPLACE; do
   mktouch $MODPATH$TARGET/.replace
+  mktouch $AUDMODLIBPATH$TARGET/.replace
 done
 
 # Auto Mount
-if ($AUTOMOUNT); then
+if $AUTOMOUNT; then
   mktouch $MODPATH/auto_mount
 fi
 
 # prop files
-if ($PROPFILE); then
+if $PROPFILE; then
   cp -af $INSTALLER/common/system.prop $MODPATH/system.prop
 fi
 
 # Module info
 cp -af $INSTALLER/module.prop $MODPATH/module.prop
-if ($BOOTMODE); then
+if $BOOTMODE; then
   # Update info for Magisk Manager
   mktouch /magisk/$MODID/update
   cp -af $INSTALLER/module.prop /magisk/$MODID/module.prop
 fi
 
 # post-fs-data mode scripts
-if ($POSTFSDATA); then
+if $POSTFSDATA; then
   cp -af $INSTALLER/common/post-fs-data.sh $MODPATH/post-fs-data.sh
 fi
 
 # service mode scripts
-if ($LATESTARTSERVICE); then
+if $LATESTARTSERVICE; then
   cp -af $INSTALLER/common/service.sh $MODPATH/service.sh
 fi
 
-ui_print "- Setting permissions"
+#### COMPLETING INSTALL ####
+ui_print " "
+ui_print "- Completing install -"
+
+ui_print "   Setting permissions..."
 set_permissions
 
-ui_print "- Unmounting partitions"
-
+ui_print "   Unmounting partitions..."
 umount $MOUNTPATH
 losetup -d $LOOPDEVICE
 rmdir $MOUNTPATH
 
 # Shrink the image if possible
-target_size_check $IMG
-NEWDATASIZE=$(((curUsedM / 32 + 2) * 32))
+image_size_check $IMG
+NEWDATASIZE=$((curUsedM / 32 * 32 + 32))
 if [ "$curSizeM" -gt "$NEWDATASIZE" ]; then
-  ui_print "- Shrinking $IMG to ${NEWDATASIZE}M..."
+  ui_print "   Shrinking $IMG to ${NEWDATASIZE}M..."
   resize2fs $IMG ${NEWDATASIZE}M
 fi
 
-if (! $BOOTMODE); then
-  umount /system
-  umount /vendor 2>/dev/null
+if ! $BOOTMODE; then
+  umount $SYSTEM
+  umount $VENDOR 2>/dev/null
 fi
 
-ui_print "- Done"
+ui_print " "
+ui_print "    --------- INSTALLATION SUCCESSFUL ---------"
+
+ui_print " "
+ui_print "Installer brought to you by ahrion @ XDA"
+
+# Please leave this message in your flashable zip for credits :)
+ui_print " "
+ui_print "    *******************************************"
+ui_print "    *      Powered by Magisk (@topjohnwu)     *"
+ui_print "    *******************************************"
+ui_print " "
 exit 0
