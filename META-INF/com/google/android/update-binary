@@ -246,7 +246,7 @@ unified_mod_directory() {
   # CREATING DIRECTORIES
   ui_print "   Creating directories..."
   
-  if [ "$MAGISK" = true ]; then
+  if [ "$MAGISK" == true ]; then
     rm -rf $MODPATH 2>/dev/null
     mkdir -p $MODPATH
   fi
