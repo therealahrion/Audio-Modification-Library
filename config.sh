@@ -37,7 +37,7 @@ AUTOMOUNT=true
 PROPFILE=false
 
 # Set to true if you need post-fs-data script
-POSTFSDATA=true
+POSTFSDATA=false
 
 # Set to true if you need late_start service script
 LATESTARTSERVICE=true
@@ -54,7 +54,7 @@ print_modname() {
   ui_print "      *      Audio Modification Library      *"
   ui_print "      ****************************************"
   ui_print "      *         Universal - Patcher          *"
-  ui_print "      *             Version 1.0              *"
+  ui_print "      *             Version 1.1              *"
   ui_print "      *              by ahrion               *"
   ui_print "      ****************************************"
   ui_print " "
