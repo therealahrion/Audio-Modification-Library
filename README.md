@@ -7,5 +7,8 @@ AudModLib is a framework that allows the seamless integration of multiple audio 
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
+1.1
+    - Hotfix for bootloops issues on some devices
+
 1.0
     - Initial Magisk release
