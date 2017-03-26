@@ -37,7 +37,7 @@ elif [ -d "$SYSTEM/vendor" ] || [ -L "/vendor" ]; then
   VENDOR=$SYSTEM/vendor
 fi
 
-suimg=$(ls /cache/su.img /data/su.img 2>/dev/null);
+supersuimg=$(ls /cache/su.img /data/su.img 2>/dev/null);
 
 if [ -d $SYSTEM/priv-app ]; then
   APPDIR=priv-app
@@ -73,7 +73,7 @@ is_mounted() {
   return $?
 }
 
-sys_is_mounted() {
+supersu_is_mounted() {
   case `mount` in
     *" $1 "*) echo 1;;
     *) echo 0;;
@@ -313,8 +313,6 @@ magisk_audmodlib() {
       mkdir -p $AUDMODLIBPATH${CFG%/*}
 	fi
   done
-
-  unified_mod_patch
   
   for CFG in $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
     if [ -f $CFG ]; then
@@ -330,20 +328,6 @@ magisk_audmodlib() {
 
   ui_print "   ! AudModLib framework by ahrion @ XDA !"
   ########## ^ DO NOT REMOVE ^ ##########
-}
-
-unified_mod_patch() {
-  ########################################################################################
-  # Audio Modification Library file patcher for Unified install
-  ########################################################################################
-
-  ########## v DO NOT REMOVE v ##########
-  #### PATCHING FILES ####
-  ui_print "   Patching necessary cfg files..."
-  ########## ^ DO NOT REMOVE ^ ##########
-
-  #### v INSERT YOUR FILE PATCHES v ####
-  #### ^ INSERT YOUR FILE PATCHES ^ ####
 }
 
 readlink /proc/$$/fd/$OUTFD 2>/dev/null | grep /tmp >/dev/null
@@ -420,16 +404,16 @@ mount /data 2>/dev/null
 mount -o rw,remount /data 2>/dev/null
 mount -o rw,remount /data /data 2>/dev/null
 
-if [ "$suimg" ]; then
-  if [ "$(sys_is_mounted /su)" == 0 ]; then
+if [ "$supersuimg" ]; then
+  if [ "$(supersu_is_mounted /su)" == 0 ]; then
     ui_print "   Mounting /su...";
     test ! -e /su && mkdir /su;
-    mount -t ext4 -o rw,noatime $suimg /su 2>/dev/null
+    mount -t ext4 -o rw,noatime $supersuimg /su 2>/dev/null
     for i in 0 1 2 3 4 5 6 7; do
-      test "$(sys_is_mounted /su)" == 1 && break;
+      test "$(supersu_is_mounted /su)" == 1 && break;
       loop=/dev/block/loop$i;
 	  mknod $loop b 7 $i;
-	  losetup $loop $suimg;
+	  losetup $loop $supersuimg;
 	  mount -t ext4 -o loop $loop /su; 2>/dev/null
     done;
   fi;
@@ -536,7 +520,6 @@ magisk_audmodlib
 # Handle replace folders
 for TARGET in $REPLACE; do
   mktouch $MODPATH$TARGET/.replace
-  mktouch $AUDMODLIBPATH$TARGET/.replace
 done
 
 # Auto Mount
