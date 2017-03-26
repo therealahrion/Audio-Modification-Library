@@ -267,12 +267,10 @@ magisk_audmodlib() {
   mkdir -p $MOUNTPATH/.core/post-fs-data.d
   cp -af $INSTALLER/common/$MODID.sh $MOUNTPATH/.core/post-fs-data.d/$MODID.sh  
 
-  if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
-    rm -rf /cache/magisk/audmodlib
-  fi
-
   if [ ! -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
     TMPAUDMODLIBDIR=""
+  elif [ -d /cache/magisk/audmodlib ]; then
+    TMPAUDMODLIBDIR=/cache/magisk/audmodlib
   elif [ -d $AUDMODLIBPATH ]; then
     TMPAUDMODLIBDIR=/magisk/audmodlib
   elif [ -d /magisk/audmodlib ]; then
