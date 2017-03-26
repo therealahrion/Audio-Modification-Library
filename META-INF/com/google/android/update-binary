@@ -247,6 +247,7 @@ unified_mod_directory() {
   ui_print "   Creating directories..."
   
   if [ "$MAGISK" == true ]; then
+    rm -rf $MODPATH 2>/dev/null
     mkdir -p $MODPATH
   fi
   ########## ^ DO NOT REMOVE ^ ##########
@@ -274,7 +275,7 @@ magisk_audmodlib() {
   elif [ -d $AUDMODLIBPATH ]; then
     TMPAUDMODLIBDIR=$AUDMODLIBPATH
   elif [ -d /magisk/audmodlib ]; then
-    TMPAUDMODLIBDIR=/magisk/audmodlib
+    TMPAUDMODLIBDIR=$AUDMODLIBPATH
   fi
   
   magisk_install
