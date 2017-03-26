@@ -273,9 +273,9 @@ magisk_audmodlib() {
   if [ ! -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
     TMPAUDMODLIBDIR=""
   elif [ -d $AUDMODLIBPATH ]; then
-    TMPAUDMODLIBDIR=$AUDMODLIBPATH
+    TMPAUDMODLIBDIR=/magisk/audmodlib
   elif [ -d /magisk/audmodlib ]; then
-    TMPAUDMODLIBDIR=$AUDMODLIBPATH
+    TMPAUDMODLIBDIR=/magisk/audmodlib
   fi
   
   magisk_install
