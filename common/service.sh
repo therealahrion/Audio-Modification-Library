@@ -54,7 +54,3 @@ fi
 
 $SEINJECT --live "allow mediaserver mediaserver_tmpfs file { read write execute }" \
 "allow audioserver audioserver_tmpfs file { read write execute }"
-
-if [ "$supersuimg" ] || [ -d /su ]; then
-  umount /su
-fi
