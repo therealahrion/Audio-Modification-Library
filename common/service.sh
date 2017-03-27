@@ -54,12 +54,12 @@ if [ "$supersuimg" ]; then
   fi;
 fi;
 
-mount -o ro $SYSTEM 2>/dev/null
-mount -o ro,remount $SYSTEM 2>/dev/null
-mount -o ro,remount $SYSTEM $SYSTEM 2>/dev/null
-mount -o ro $VENDOR 2>/dev/null
-mount -o ro,remount $VENDOR 2>/dev/null
-mount -o ro,remount $VENDOR $VENDOR 2>/dev/null
+mount -o rw $SYSTEM 2>/dev/null
+mount -o rw,remount $SYSTEM 2>/dev/null
+mount -o rw,remount $SYSTEM $SYSTEM 2>/dev/null
+mount -o rw $VENDOR 2>/dev/null
+mount -o rw,remount $VENDOR 2>/dev/null
+mount -o rw,remount $VENDOR $VENDOR 2>/dev/null
 
 if [ -f "/data/magisk.img" ]; then
   SEINJECT=/data/magisk/sepolicy-inject
