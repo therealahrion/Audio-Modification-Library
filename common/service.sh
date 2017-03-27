@@ -54,13 +54,6 @@ if [ "$supersuimg" ]; then
   fi;
 fi;
 
-mount -o rw $SYSTEM 2>/dev/null
-mount -o rw,remount $SYSTEM 2>/dev/null
-mount -o rw,remount $SYSTEM $SYSTEM 2>/dev/null
-mount -o rw $VENDOR 2>/dev/null
-mount -o rw,remount $VENDOR 2>/dev/null
-mount -o rw,remount $VENDOR $VENDOR 2>/dev/null
-
 if [ -f "/data/magisk.img" ]; then
   SEINJECT=/data/magisk/sepolicy-inject
 elif [ "$supersuimg" ] || [ -d /su ]; then
@@ -77,6 +70,3 @@ $SEINJECT --live "allow mediaserver mediaserver_tmpfs file { read write execute 
 if [ "$supersuimg" ] || [ -d /su ]; then
   umount /su
 fi
-
-umount $SYSTEM
-umount $VENDOR 2>/dev/null
