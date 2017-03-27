@@ -7,9 +7,6 @@ AudModLib is a framework that allows the seamless integration of multiple audio 
 * Pixel support
 * Works with nearly every device, kernel, and rom
 
-#### Source Code
-* Module [GitHub](https://github.com/therealahrion/Audio-Modification-Library)
-
 ## Change Log
 v1.2
 	- Added audmodlib.sh post-fs-data.d script
@@ -21,3 +18,6 @@ v1.1
 
 v1.0
     - Initial Magisk release
+
+## Source Code
+* Module [GitHub](https://github.com/therealahrion/Audio-Modification-Library)
