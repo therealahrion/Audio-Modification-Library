@@ -461,9 +461,6 @@ if is_mounted /data; then
     ui_print "   ! Magisk is not installed!"
     ui_print "    ! Magisk is required for this mod!"
     #### COMPLETING INSTALL ####
-    if [ "$supersuimg" ] || [ -d /su ]; then
-      umount /su
-    fi
     ui_print " "
     ui_print "    -------- INSTALLATION UNSUCCESSFUL --------"
     ui_print " "
@@ -569,6 +566,9 @@ if [ "$curSizeM" -gt "$NEWDATASIZE" ]; then
 fi
 
 if ! $BOOTMODE; then
+  if [ "$supersuimg" ] || [ -d /su ]; then
+    umount /su
+  fi
   umount $SYSTEM
   umount $VENDOR 2>/dev/null
 fi
