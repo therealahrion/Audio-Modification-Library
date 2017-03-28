@@ -14,7 +14,7 @@ v1.2
 	- Install script fixes
 
 v1.1
-    - Hotfix for bootloops issues on some devices
+    - Hotfix for bootloop issues on some devices
 
 v1.0
     - Initial Magisk release
