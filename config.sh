@@ -40,7 +40,7 @@ PROPFILE=false
 POSTFSDATA=false
 
 # Set to true if you need late_start service script
-LATESTARTSERVICE=true
+LATESTARTSERVICE=false
 
 ##########################################################################################
 # Installation Message
@@ -54,7 +54,7 @@ print_modname() {
   ui_print "      *      Audio Modification Library      *"
   ui_print "      ****************************************"
   ui_print "      *         Universal - Patcher          *"
-  ui_print "      *             Version 1.2              *"
+  ui_print "      *             Version 1.3              *"
   ui_print "      *              by ahrion               *"
   ui_print "      ****************************************"
   ui_print " "
