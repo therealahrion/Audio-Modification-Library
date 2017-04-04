@@ -28,6 +28,7 @@
 # This will be the folder name under /magisk
 # This should also be the same as the id in your module.prop to prevent confusion
 MODID=audmodlib
+AUDMODLIBID=audmodlib
 
 # Set to true if you need to enable Magic Mount
 # Most mods would like it to be enabled
@@ -54,7 +55,7 @@ print_modname() {
   ui_print "      *      Audio Modification Library      *"
   ui_print "      ****************************************"
   ui_print "      *         Universal - Patcher          *"
-  ui_print "      *             Version 1.3              *"
+  ui_print "      *             Version 1.4              *"
   ui_print "      *              by ahrion               *"
   ui_print "      ****************************************"
   ui_print " "

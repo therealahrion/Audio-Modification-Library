@@ -8,9 +8,15 @@ AudModLib is a framework that allows the seamless integration of multiple audio 
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
+v1.4
+	- Change SELinux live patching to allow better compatibility between different devices, kernels, and roms; while also keeping the amount of "allowances" to a minumum
+	- Changed post-fs-data(.d)/service(.d) shell script names for cosmetic recognition
+	- Merge SuperSU shell script with MagiskSU post-fs-data(.d)/service(.d) script for less fragmentation
+	- Install script changes that include: major update to Pixel (AB) support, mounting changes, fixes & consolidation
+
 v1.3
 	- Script addition to allow various audio mods working with SELinux Enforcing
-	- Remove (audmodlib)service.sh and replace with pos-fs-data(.d) audmodlib.sh, which should fix when root may be lost upon installing certain mods
+	- Remove (audmodlib)service.sh and replace with post-fs-data(.d) audmodlib.sh, which should fix when root may be lost upon installing certain mods
 
 v1.2
 	- Added audmodlib.sh post-fs-data.d script
