@@ -17,7 +17,7 @@ if [ ! -d /magisk/$MODID ]; then
   rm -f /magisk/.core/post-fs-data.d/$MODID.sh
   #### ^ INSERT YOUR REMOVE PATCH OR RESTORE ^ ####
 else
-  # DETERMINE IF PIXEL (AB) DEVICE
+  # DETERMINE IF PIXEL (A/B OTA) DEVICE
   ABDeviceCheck=$(cat /proc/cmdline | grep slot_suffix | wc -l)
   if [ "$ABDeviceCheck" -gt 0 ]; then
     isABDevice=true
