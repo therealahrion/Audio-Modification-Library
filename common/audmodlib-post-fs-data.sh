@@ -19,7 +19,7 @@ if [ ! -d /magisk/$MODID ]; then
 else
   # DETERMINE IF PIXEL (AB) DEVICE
   ABDeviceCheck=$(cat /proc/cmdline | grep slot_suffix | wc -l)
-  if [ $ABDeviceCheck -gt 0 ]; then
+  if [ "$ABDeviceCheck" -gt 0 ]; then
     isABDevice=true
     SLOT=$(for i in `cat /proc/cmdline`; do echo $i | grep slot_suffix | awk -F "=" '{print $2}';done)
     SYSTEM=/system/system
@@ -27,7 +27,7 @@ else
   else
     isABDevice=false
     SYSTEM=/system
-    VENDOR=$SYSTEM/VENDOR
+    VENDOR=$SYSTEM/vendor
   fi
 
   supersuimg=$(ls /cache/su.img /data/su.img 2>/dev/null);
