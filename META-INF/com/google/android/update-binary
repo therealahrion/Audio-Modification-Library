@@ -157,15 +157,15 @@ ZIP=$3
 ### FILE LOCATIONS ###
 # AUDIO EFFECTS
 CONFIG_FILE=/system/etc/audio_effects.conf
-VENDOR_CONFIG=/vendor/etc/audio_effects.conf
+VENDOR_CONFIG=/system/vendor/etc/audio_effects.conf
 HTC_CONFIG_FILE=/system/etc/htc_audio_effects.conf
 OTHER_VENDOR_FILE=/system/etc/audio_effects_vendor.conf
 OFFLOAD_CONFIG=/system/etc/audio_effects_offload.conf
 # AUDIO POLICY
 AUD_POL=/system/etc/audio_policy.conf
 AUD_POL_CONF=/system/etc/audio_policy_configuration.xml
-AUD_OUT_POL=/vendor/etc/audio_output_policy.conf
-V_AUD_POL=/vendor/etc/audio_policy.conf
+AUD_OUT_POL=/system/vendor/etc/audio_output_policy.conf
+V_AUD_POL=/system/vendor/etc/audio_policy.conf
 
 magisk_install() {
   MAGISK=true
