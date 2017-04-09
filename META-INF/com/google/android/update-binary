@@ -273,7 +273,6 @@ unified_mod_directory() {
   
   if [ "$MAGISK" == true ]; then
     rm -rf $MODPATH 2>/dev/null
-    mkdir -p $MODPATH
   fi
   ########## ^ DO NOT REMOVE ^ ##########
 
@@ -335,18 +334,6 @@ magisk_audmodlib() {
   cp -af $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
   mkdir -p $MOUNTPATH/.core/service.d
   cp -af $INSTALLER/common/$AUDMODLIBID-service.sh $MOUNTPATH/.core/service.d/$AUDMODLIBID.sh
-
-  if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
-    rm -rf /cache/magisk/audmodlib
-  fi  
-
-  if [ ! -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
-    TMPAUDMODLIBDIR=""
-  elif [ -d $AUDMODLIBPATH ]; then
-    TMPAUDMODLIBDIR=$AUDMODLIBPATH
-  elif [ -d /magisk/audmodlib ]; then
-    TMPAUDMODLIBDIR=/magisk/audmodlib
-  fi
   
   magisk_install
 
@@ -365,9 +352,13 @@ magisk_audmodlib() {
   done
 
   for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
-    if [ -f $CFG ]; then
-      cp -af $TMPAUDMODLIBDIR$CFG /cache/magisk/audmodlib$CFG
-	fi
+    if [ -f $CFG ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+      cp -af $CFG /cache/magisk/audmodlib$CFG
+    elif [ -d $AUDMODLIBPATH ]; then
+      cp -af $AUDMODLIBPATH$CFG /cache/magisk/audmodlib$CFG
+    elif [ -d /magisk/audmodlib ]; then
+      cp -af /magisk/audmodlib$CFG /cache/magisk/audmodlib$CFG
+    fi
   done
 
   if [ -f $VENDOR_CONFIG ]; then
