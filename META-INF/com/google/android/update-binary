@@ -336,12 +336,14 @@ magisk_audmodlib() {
   mkdir -p $MOUNTPATH/.core/service.d
   cp -af $INSTALLER/common/$AUDMODLIBID-service.sh $MOUNTPATH/.core/service.d/$AUDMODLIBID.sh
 
+  if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+    rm -rf /cache/magisk/audmodlib
+  fi  
+
   if [ ! -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
     TMPAUDMODLIBDIR=""
-  elif [ -d /cache/magisk/audmodlib ]; then
-    TMPAUDMODLIBDIR=/cache/magisk/audmodlib
   elif [ -d $AUDMODLIBPATH ]; then
-    TMPAUDMODLIBDIR=/magisk/audmodlib
+    TMPAUDMODLIBDIR=$AUDMODLIBPATH
   elif [ -d /magisk/audmodlib ]; then
     TMPAUDMODLIBDIR=/magisk/audmodlib
   fi
