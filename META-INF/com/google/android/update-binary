@@ -223,9 +223,9 @@ script_install_logic() {
   if [ "$supersuimg" ] || [ -d /su ]; then
     SH=/su/su.d
   elif [ -d $SYSTEM/su ] || [ -f $SYSTEM/xbin/daemonsu ] || [ -f $SYSTEM/xbin/su ] || [ -f $SYSTEM/xbin/sugote ]; then
-    SH=/system/su.d
+    SH=$SYSTEM/su.d
   elif [ -d $SYSTEM/etc/init.d ]; then
-    SH=/system/etc/init.d
+    SH=$SYSTEM/etc/init.d
     EXT=""
   fi
   ########## ^ DO NOT REMOVE ^ ##########
@@ -245,10 +245,10 @@ unified_mod_wipe() {
   #### v INSERT YOUR FILE REMOVALS v ####
   # REMOVE FILES
   ui_print "   Removing files..."
-  rm -f /system/addon.d/$MODID.sh
-  rm -f /system/etc/init.d/$MODID
+  rm -f $SYSTEM/addon.d/$MODID.sh
+  rm -f $SYSTEM/etc/init.d/$MODID
   rm -f /su/su.d/$MODID.sh
-  rm -f /system/su.d/$MODID.sh
+  rm -f $SYSTEM/su.d/$MODID.sh
   #### ^ INSERT YOUR FILE REMOVALS ^ ####
 
   #### v INSERT YOUR REMOVE PATCH v ####
@@ -281,7 +281,7 @@ unified_mod_directory() {
   script_install_logic
   sys_mk_ch $SH 0755
     if [ -d $SYSTEM/addon.d ]; then
-      sys_mk_ch /system/addon.d 0755
+      sys_mk_ch $SYSTEM/addon.d 0755
     fi
   fi
   #### ^ INSERT YOUR DIRECTORY MAKING ^ ####
@@ -313,7 +313,7 @@ unified_mod_copy() {
     # INSTALL ROM BACKUP SCRIPT
     if [ -d $SYSTEM/addon.d ]; then
       ui_print "   Installing addon.d backup script..."
-      sys_cp_ch $INSTALLER/system/addon.d/$MODID.sh /system/addon.d/$MODID.sh 0644
+      sys_cp_ch $INSTALLER/system/addon.d/$MODID.sh $SYSTEM/addon.d/$MODID.sh 0644
     fi
   fi
   #### ^ INSERT YOUR FILE INSTALL ^ ####
@@ -334,13 +334,17 @@ magisk_audmodlib() {
   cp -af $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
   mkdir -p $MOUNTPATH/.core/service.d
   cp -af $INSTALLER/common/$AUDMODLIBID-service.sh $MOUNTPATH/.core/service.d/$AUDMODLIBID.sh
-  
+
+  if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+    rm -rf /cache/magisk/audmodlib
+  fi
+
   magisk_install
 
   for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
     if [ -f $CFG ]; then
       mkdir -p /cache/magisk/audmodlib${CFG%/*}
-	fi
+    fi
   done
 
   for CFG in $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
@@ -352,13 +356,13 @@ magisk_audmodlib() {
   done
 
   for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
-    if [ -f $CFG ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
-      cp -af $CFG /cache/magisk/audmodlib$CFG
-    elif [ -d $AUDMODLIBPATH ]; then
+    if [ -f $CFG ] && [ -d $AUDMODLIBPATH ]; then
       cp -af $AUDMODLIBPATH$CFG /cache/magisk/audmodlib$CFG
-    elif [ -d /magisk/audmodlib ]; then
+    elif [ -f $CFG ] && [ -d /magisk/audmodlib ]; then
       cp -af /magisk/audmodlib$CFG /cache/magisk/audmodlib$CFG
-    fi
+    elif [ -f $CFG ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+      cp -af $CFG /cache/magisk/audmodlib$CFG
+	fi
   done
 
   if [ -f $VENDOR_CONFIG ]; then
@@ -386,6 +390,13 @@ magisk_audmodlib() {
       cp -af /cache/magisk/audmodlib$CFG $AUDMODLIBPATH$CFG
     fi
   done
+  
+  if [ $isABDevice == true ]; then
+    mv -f "$AUDMODLIBPATH/system/system/*" $AUDMODLIBPATH/system
+    if [ -f $VENDOR_CONFIG ] || [ -f $AUD_OUT_POL ] || [ -f $V_AUD_POL ]; then
+	  mv -f "$AUDMODLIBPATH/vendor/*" $AUDMODLIBPATH/system/vendor
+    fi
+  fi
 
   ui_print "   ! AudModLib framework by ahrion @ XDA !"
   ########## ^ DO NOT REMOVE ^ ##########
