@@ -339,8 +339,6 @@ magisk_audmodlib() {
   ui_print " "
   ui_print "- Installing Audio Modification Library -"
 
-  rm -rf $AUDMODLIBPATH
-
   ui_print "   Installing scripts for MagiskSU..."
   mkdir -p $MOUNTPATH/.core/post-fs-data.d
   cp -af $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
@@ -408,7 +406,7 @@ magisk_audmodlib() {
   done
   
   if [ $isABDevice == true ]; then
-    mv $AUDMODLIBPATH/system/system $AUDMODLIBPATH/system
+    mv $AUDMODLIBPATH/system/system/etc $AUDMODLIBPATH/system
     if [ -f $V_CONFIG_FILE ] || [ -f $V_AUD_OUT_POL ] || [ -f $V_AUD_POL ]; then
 	  mv $AUDMODLIBPATH/vendor $AUDMODLIBPATH/system/vendor
     fi
