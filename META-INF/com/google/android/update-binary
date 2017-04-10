@@ -405,9 +405,9 @@ magisk_audmodlib() {
   done
   
   if [ $isABDevice == true ]; then
-    mv -f "$AUDMODLIBPATH/system/system/*" $AUDMODLIBPATH/system
+    mv -f $AUDMODLIBPATH/system/system $AUDMODLIBPATH/system
     if [ -f $V_CONFIG_FILE ] || [ -f $V_AUD_OUT_POL ] || [ -f $V_AUD_POL ]; then
-	  mv -f "$AUDMODLIBPATH/vendor/*" $AUDMODLIBPATH/system/vendor
+	  mv -f $AUDMODLIBPATH/vendor $AUDMODLIBPATH/system/vendor
     fi
   fi
 
