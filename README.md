@@ -12,7 +12,8 @@ v1.4
 	- Change SELinux live patching to allow better compatibility between different devices, kernels, and roms; while also keeping the amount of "allowances" to a minumum
 	- Changed post-fs-data(.d)/service(.d) shell script names for cosmetic recognition
 	- Merge SuperSU shell script with MagiskSU post-fs-data(.d)/service(.d) script for less fragmentation
-	- added /cache/audmodlib.log to determine if script has run successfully
+	- Added /cache/audmodlib.log to determine if script has run successfully
+	- Various mixer_paths files are now included in the framework
 	- Install script changes that include: major update to Pixel (A/B OTA) support, mounting changes, improved script efficiency, fixes & consolidation
 
 v1.3

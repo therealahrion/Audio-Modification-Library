@@ -157,15 +157,25 @@ ZIP=$3
 ### FILE LOCATIONS ###
 # AUDIO EFFECTS
 CONFIG_FILE=$SYSTEM/etc/audio_effects.conf
-VENDOR_CONFIG=$VENDOR/etc/audio_effects.conf
 HTC_CONFIG_FILE=$SYSTEM/etc/htc_audio_effects.conf
-OTHER_VENDOR_FILE=$SYSTEM/etc/audio_effects_vendor.conf
+OTHER_V_FILE=$SYSTEM/etc/audio_effects_vendor.conf
 OFFLOAD_CONFIG=$SYSTEM/etc/audio_effects_offload.conf
+V_CONFIG_FILE=$VENDOR/etc/audio_effects.conf
 # AUDIO POLICY
+A2DP_AUD_POL=$SYSTEM/etc/a2dp_audio_policy_configuration.xml
 AUD_POL=$SYSTEM/etc/audio_policy.conf
 AUD_POL_CONF=$SYSTEM/etc/audio_policy_configuration.xml
-AUD_OUT_POL=$VENDOR/etc/audio_output_policy.conf
+AUD_POL_VOL=$SYSTEM/etc/audio_policy_volumes.xml
+SUB_AUD_POL=$SYSTEM/etc/r_submix_audio_policy_configuration.xml
+USB_AUD_POL=$SYSTEM/etc/usb_audio_policy_configuration.xml
+V_AUD_OUT_POL=$VENDOR/etc/audio_output_policy.conf
 V_AUD_POL=$VENDOR/etc/audio_policy.conf
+# MIXER PATHS
+MIX_PATH=$SYSTEM/etc/mixer_paths.xml
+MIX_PATH_TASH=$SYSTEM/etc/mixer_paths_tasha.xml
+STRIGG_MIX_PATH=$SYSTEM/sound_trigger_mixer_paths.xml
+STRIGG_MIX_PATH_9330=$SYSTEM/sound_trigger_mixer_paths_wcd9330.xml
+V_MIX_PATH=$VENDOR/etc/mixer_paths.xml
 
 magisk_install() {
   MAGISK=true
@@ -174,7 +184,7 @@ magisk_install() {
   UNIFY="$MODPATH"
   MK_SFFX=""
   CP_SFFX=""
-  PATCHINSTALL="$TMPAUDMODLIBDIR"
+  PATCHINSTALL=""
   PATCH="/cache/magisk/audmodlib"
 }
 
@@ -341,13 +351,13 @@ magisk_audmodlib() {
 
   magisk_install
 
-  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       mkdir -p /cache/magisk/audmodlib${CFG%/*}
     fi
   done
 
-  for CFG in $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+  for CFG in $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ ! -f $CFG.bak ]; then
       cp -af $CFG /cache/magisk/audmodlib$CFG.bak
     else
@@ -355,37 +365,40 @@ magisk_audmodlib() {
     fi
   done
 
-  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ] && [ -d $AUDMODLIBPATH ]; then
+	  PATCHINSTALL=$AUDMODLIB
       cp -af $AUDMODLIBPATH$CFG /cache/magisk/audmodlib$CFG
     elif [ -f $CFG ] && [ -d /magisk/audmodlib ]; then
+	  PATCHINSTALL=/magisk/audmodlib
       cp -af /magisk/audmodlib$CFG /cache/magisk/audmodlib$CFG
     elif [ -f $CFG ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
+	  PATCHINSTALL=""
       cp -af $CFG /cache/magisk/audmodlib$CFG
 	fi
   done
 
-  if [ -f $VENDOR_CONFIG ]; then
-    cp -af /cache/magisk/audmodlib$CONFIG_FILE /cache/magisk/audmodlib$VENDOR_CONFIG
+  if [ -f $V_CONFIG_FILE ]; then
+    cp -af /cache/magisk/audmodlib$CONFIG_FILE /cache/magisk/audmodlib$V_CONFIG_FILE
   fi
   
   set_perm_recursive  /cache/magisk/audmodlib  0  0  0755  0644
 
   mkdir -p $AUDMODLIBPATH
 
-  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       mkdir -p $AUDMODLIBPATH${CFG%/*}
 	fi
   done
   
-  for CFG in $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+  for CFG in $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       cp -af /cache/magisk/audmodlib$CFG.bak $AUDMODLIBPATH$CFG.bak
 	fi
   done
   
-  for CFG in $CONFIG_FILE $VENDOR_CONFIG $HTC_CONFIG_FILE $OTHER_VENDOR_FILE $OFFLOAD_CONFIG $AUD_POL $AUD_POL_CONF $AUD_OUT_POL $V_AUD_POL; do
+  for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       cp -af /cache/magisk/audmodlib$CFG $AUDMODLIBPATH$CFG
     fi
@@ -393,7 +406,7 @@ magisk_audmodlib() {
   
   if [ $isABDevice == true ]; then
     mv -f "$AUDMODLIBPATH/system/system/*" $AUDMODLIBPATH/system
-    if [ -f $VENDOR_CONFIG ] || [ -f $AUD_OUT_POL ] || [ -f $V_AUD_POL ]; then
+    if [ -f $V_CONFIG_FILE ] || [ -f $V_AUD_OUT_POL ] || [ -f $V_AUD_POL ]; then
 	  mv -f "$AUDMODLIBPATH/vendor/*" $AUDMODLIBPATH/system/vendor
     fi
   fi
