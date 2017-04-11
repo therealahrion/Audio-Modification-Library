@@ -369,14 +369,14 @@ magisk_audmodlib() {
     if [ ! -f $CFG.bak ]; then
       cp -af $CFG /cache/magisk/audmodlib$CFG.bak
     else
-	  cp -af $CFG.bak /cache/magisk/audmodlib$CFG.bak
+      cp -af $CFG.bak /cache/magisk/audmodlib$CFG.bak
     fi
   done
 
   for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       cp -af $SOURCEDIR$CFG /cache/magisk/audmodlib$CFG
-	fi
+    fi
   done
 
   if [ -f $V_CONFIG_FILE ]; then
@@ -390,13 +390,13 @@ magisk_audmodlib() {
   for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       mkdir -p $AUDMODLIBPATH${CFG%/*}
-	fi
+    fi
   done
   
   for CFG in $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       cp -af /cache/magisk/audmodlib$CFG.bak $AUDMODLIBPATH$CFG.bak
-	fi
+    fi
   done
   
   for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
@@ -404,13 +404,6 @@ magisk_audmodlib() {
       cp -af /cache/magisk/audmodlib$CFG $AUDMODLIBPATH$CFG
     fi
   done
-  
-  if [ $isABDevice == true ]; then
-    mv $AUDMODLIBPATH/system/system/etc $AUDMODLIBPATH/system
-    if [ -f $V_CONFIG_FILE ] || [ -f $V_AUD_OUT_POL ] || [ -f $V_AUD_POL ]; then
-	  mv $AUDMODLIBPATH/vendor $AUDMODLIBPATH/system/vendor
-    fi
-  fi
 
   ui_print "   ! AudModLib framework by ahrion @ XDA !"
   ########## ^ DO NOT REMOVE ^ ##########
@@ -494,9 +487,9 @@ if [ "$supersuimg" ]; then
     for i in 0 1 2 3 4 5 6 7; do
       test "$(supersu_is_mounted /su)" == 1 && break;
       loop=/dev/block/loop$i;
-	  mknod $loop b 7 $i;
-	  losetup $loop $supersuimg;
-	  mount -t ext4 -o loop $loop /su; 2>/dev/null
+      mknod $loop b 7 $i;
+      losetup $loop $supersuimg;
+      mount -t ext4 -o loop $loop /su; 2>/dev/null
     done;
   fi;
 fi;
@@ -549,8 +542,8 @@ if is_mounted /data; then
     ui_print "    -------- INSTALLATION UNSUCCESSFUL --------"
     ui_print " "
     ui_print "Installer brought to you by ahrion @ XDA"
-	ui_print " "
-	exit 0;
+    ui_print " "
+    exit 0;
   fi
 else
   IMG=/cache/magisk.img

@@ -22,14 +22,14 @@ v1.3
 
 v1.2
 	- Added audmodlib.sh post-fs-data.d script
-    - Fix selinux injection script to work for MagiskSU/SuperSU (system and systemless)
+	- Fix selinux injection script to work for MagiskSU/SuperSU (system and systemless)
 	- Install script fixes
 
 v1.1
-    - Hotfix for bootloop issues on some devices
+	- Hotfix for bootloop issues on some devices
 
 v1.0
-    - Initial Magisk release
+	- Initial Magisk release
 
 ## Source Code
 * Module [GitHub](https://github.com/therealahrion/Audio-Modification-Library)
