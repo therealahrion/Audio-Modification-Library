@@ -14,7 +14,7 @@ v1.4
 	- Merge SuperSU shell script with MagiskSU post-fs-data(.d)/service(.d) script for less fragmentation
 	- Added /cache/audmodlib.log to determine if script has run successfully
 	- More audio policy files and various mixer_paths files are now included in the framework
-	- Install script changes that include: major update to Pixel (A/B OTA) support, mounting changes, improved script efficiency, fixes & consolidation
+	- Install script changes that include: major update to Pixel (A/B OTA) support, mounting changes, improved script efficiency, fixes & consolidation, and cosmetic fixes
 	- Add/fix proper addon.d support
 
 v1.3
