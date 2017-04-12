@@ -181,22 +181,22 @@ magisk_install() {
   MAGISK=true
   MK_PRFX="mkdir -p"
   CP_PRFX="cp -af"
-  UNIFY="$MODPATH"
+  UNITY="$MODPATH"
   MK_SFFX=""
   CP_SFFX=""
   SOURCEDIR="$SOURCEDIR"
-  PATCH="/cache/magisk/audmodlib"
+  UNITYPATCH="/cache/magisk/audmodlib"
 }
 
 system_install() {
   MAGISK=false
   MK_PRFX="sys_mk_ch"
   CP_PRFX="sys_cp_ch"
-  UNIFY=""
+  UNITY=""
   MK_SFFX=" 0755"
   CP_SFFX=" 0644"
   SOURCEDIR=""
-  PATCH=""
+  UNITYPATCH=""
 }
 
 ##########################################################################################
@@ -288,8 +288,8 @@ unified_mod_directory() {
 
   #### v INSERT YOUR DIRECTORY MAKING v ####
   if [ "$MAGISK" == false ]; then
-  script_install_logic
-  sys_mk_ch $SH 0755
+    script_install_logic
+    sys_mk_ch $SH 0755
     if [ -d $SYSTEM/addon.d ]; then
       sys_mk_ch $SYSTEM/addon.d 0755
     fi
