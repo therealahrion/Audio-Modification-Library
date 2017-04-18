@@ -58,15 +58,19 @@ else
     MAGISK=true
     SEINJECT=/data/magisk/sepolicy-inject
     SH=/magisk/.core/post-fs-data.d
+    PROP=resetprop
   elif [ "$supersuimg" ] || [ -d /su ]; then
     SEINJECT=/su/bin/supolicy
     SH=/su/su.d
+    PROP=setprop
   elif [ -d $SYSTEM/su ] || [ -f $SYSTEM/xbin/daemonsu ] || [ -f $SYSTEM/xbin/su ] || [ -f $SYSTEM/xbin/sugote ]; then
     SEINJECT=$SYSTEM/xbin/supolicy
     SH=$SYSTEM/su.d
+    PROP=setprop
   elif [ -d $SYSTEM/etc/init.d ]; then
     SEINJECT=$SYSTEM/xbin/supolicy
     SH=$SYSTEM/etc/init.d
+    PROP=setprop
     EXT=""
   fi
   
@@ -75,6 +79,10 @@ else
   else
     SOURCE=system_app
   fi
+  
+  #### v INSERT YOUR PROP LOGIC v ####
+	#$PROP name.of.prop value
+  #### ^ INSERT YOUR PROP LOGIC ^ ####
 
   $SEINJECT --live "allow audioserver audioserver_tmpfs file { read write execute }" \
   "allow audioserver system_file file { execmod }" \
