@@ -323,8 +323,8 @@ unified_mod_copy() {
 	fi
 	ui_print "    Adding build props..."
 	NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"
-	OLDPROPBEGLINE="$(expr $(sed -n '/v INSERT YOUR PROP LOGIC v/=' $SH/$AUDMODLIBID$EXT) + 1)"
-	OLDPROPENDLINE="$(expr $(sed -n '/\^ INSERT YOUR PROP LOGIC \^/=' $SH/$AUDMODLIBID$EXT) - 1)"
+	OLDPROPBEGLINE="$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $SH/$AUDMODLIBID$EXT) + 1)"
+	OLDPROPENDLINE="$(expr $(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $SH/$AUDMODLIBID$EXT) - 1)"
 	OLDPROPS="$(sed -n "$OLDPROPBEGLINE,$OLDPROPENDLINE p" $SH/$AUDMODLIBID$EXT)"
 	printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
 	do
@@ -337,7 +337,7 @@ unified_mod_copy() {
 		  fi
 	  done
 	  if [ $PRESENT == "false" ]; then
-	    sed -i "/\^ INSERT YOUR PROP LOGIC \^/ i$linenew" $SH/$AUDMODLIBID$EXT
+	    sed -i "/\^ PROP LOCATION DO NOT REMOVE \^/ i$linenew" $SH/$AUDMODLIBID$EXT
 	  fi
 	  }
 	done
@@ -372,8 +372,8 @@ magisk_audmodlib() {
   fi
   ui_print "    Adding build props..."
   NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"
-  OLDPROPBEGLINE="$(expr $(sed -n '/v INSERT YOUR PROP LOGIC v/=' $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh) + 1)"
-  OLDPROPENDLINE="$(expr $(sed -n '/\^ INSERT YOUR PROP LOGIC \^/=' $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh) - 1)"
+  OLDPROPBEGLINE="$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh) + 1)"
+  OLDPROPENDLINE="$(expr $(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh) - 1)"
   OLDPROPS="$(sed -n "$OLDPROPBEGLINE,$OLDPROPENDLINE p" $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh)"
   printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
   do
@@ -386,7 +386,7 @@ magisk_audmodlib() {
 		fi
 	done
 	if [ $PRESENT == "false" ]; then
-		 sed -i "/\^ INSERT YOUR PROP LOGIC \^/ i$linenew" $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
+		 sed -i "/\^ PROP LOCATION DO NOT REMOVE \^/ i$linenew" $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
 	fi
 	}
   done

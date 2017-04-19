@@ -80,9 +80,9 @@ else
     SOURCE=system_app
   fi
   
-  #### v INSERT YOUR PROP LOGIC v ####
+  #### v PROP LOCATION DO NOT REMOVE v ####
 	#$PROP name.of.prop value
-  #### ^ INSERT YOUR PROP LOGIC ^ ####
+  #### ^ PROP LOCATION DO NOT REMOVE ^ ####
 
   $SEINJECT --live "allow audioserver audioserver_tmpfs file { read write execute }" \
   "allow audioserver system_file file { execmod }" \
