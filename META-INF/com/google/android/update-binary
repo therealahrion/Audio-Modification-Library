@@ -365,31 +365,33 @@ magisk_audmodlib() {
  mkdir -p $MOUNTPATH/.core/service.d
   cp -af $INSTALLER/common/$AUDMODLIBID-service.sh $MOUNTPATH/.core/service.d/$AUDMODLIBID.sh
   cp -af $INSTALLER/common/$MODID-service.sh $MOUNTPATH/.core/service.d/$MODID.sh
-  
   mkdir -p $MOUNTPATH/.core/post-fs-data.d
-  if [ ! -f $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh ]; then
-	cp -af $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
-  fi
+  cp -af $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
+  mkdir -p $MOUNTPATH/.core/props
   ui_print "    Adding build props..."
-  NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"
-  OLDPROPBEGLINE="$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh) + 1)"
-  OLDPROPENDLINE="$(expr $(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh) - 1)"
-  OLDPROPS="$(sed -n "$OLDPROPBEGLINE,$OLDPROPENDLINE p" $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh)"
-  printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
-  do
-	PRESENT="false"
-	printf '%s\n' "$OLDPROPS" | {
-	while IFS= read -r lineold
+  if [ ! -f $MOUNTPATH/.core/props/$AUDMODLIBID.prop ]; then
+	cp -af $INSTALLER/common/$AUDMODLIBID-props.prop $MOUNTPATH/.core/props/$AUDMODLIBID.prop
+  else
+	sed -i '4,${s/\$PROP //g}' $INSTALLER/common/$AUDMODLIBID-props.prop
+	sed -i '4,${s/ /=/g}' $INSTALLER/common/$AUDMODLIBID-props.prop
+	NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"
+	OLDPROPS="$(sed -n '4,$ p' $MOUNTPATH/.core/props/$AUDMODLIBID.prop)"
+	printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
 	do
+	  PRESENT="false"
+	  printf '%s\n' "$OLDPROPS" | {
+	  while IFS= read -r lineold
+	  do
 		if [ "$linenew" == "$lineold" ]; then
 			PRESENT="true"
 		fi
+	  done
+	  if [ $PRESENT == "false" ]; then
+		echo "$linenew" >> $MOUNTPATH/.core/props/$AUDMODLIBID.prop
+	  fi
+	  }
 	done
-	if [ $PRESENT == "false" ]; then
-		 sed -i "/\^ PROP LOCATION DO NOT REMOVE \^/ i$linenew" $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
-	fi
-	}
-  done
+  fi
 
   if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
     rm -rf /cache/magisk/audmodlib
