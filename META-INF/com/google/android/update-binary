@@ -369,11 +369,11 @@ magisk_audmodlib() {
   cp -af $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
   mkdir -p $MOUNTPATH/.core/props
   ui_print "    Adding build props..."
+  sed -i '4,${s/\$PROP //g}' $INSTALLER/common/$AUDMODLIBID-props.prop
+  sed -i '4,${s/ /=/g}' $INSTALLER/common/$AUDMODLIBID-props.prop
   if [ ! -f $MOUNTPATH/.core/props/$AUDMODLIBID.prop ]; then
 	cp -af $INSTALLER/common/$AUDMODLIBID-props.prop $MOUNTPATH/.core/props/$AUDMODLIBID.prop
   else
-	sed -i '4,${s/\$PROP //g}' $INSTALLER/common/$AUDMODLIBID-props.prop
-	sed -i '4,${s/ /=/g}' $INSTALLER/common/$AUDMODLIBID-props.prop
 	NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"
 	OLDPROPS="$(sed -n '4,$ p' $MOUNTPATH/.core/props/$AUDMODLIBID.prop)"
 	printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
