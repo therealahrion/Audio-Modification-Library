@@ -77,6 +77,10 @@ else
   fi
 
   $SEINJECT --live "permissive $SOURCE audio_prop"
+  
+  if [ -f /magisk/$MODID$SYSTEM/su.d/$MODID ];then
+    /system/bin/sh magisk/$MODID$SYSTEM/su.d/$MODID
+  fi
 
   LOG_FILE=/cache/$MODID-service.log
   if [ -e /cache/$MODID-service.log ]; then

@@ -374,29 +374,28 @@ magisk_audmodlib() {
   mkdir -p $MOUNTPATH/.core/props
   if [ "$(sed -n '4,$p' $INSTALLER/common/$AUDMODLIBID-props.prop)" ]; then
     ui_print "    Adding build props..."
-    sed -i '4,${s/\$PROP //g}' $INSTALLER/common/$AUDMODLIBID-props.prop
-    sed -i '4,${s/ /=/g}' $INSTALLER/common/$AUDMODLIBID-props.prop
-    if [ ! -f $MOUNTPATH/.core/props/$AUDMODLIBID.prop ]; then
-	  cp -af $INSTALLER/common/$AUDMODLIBID-props.prop $MOUNTPATH/.core/props/$AUDMODLIBID.prop
-    else
+	if [ ! -f $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID ]; then
+		mkdir -p $AUDMODLIBPATH$SYSTEM/su.d
+		cp -af $INSTALLER/common/$AUDMODLIBID-props.prop $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID
+	else
 	  NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"																															   
-	  OLDPROPS="$(sed -n '4,$ p' $MOUNTPATH/.core/props/$AUDMODLIBID.prop)"
+	  OLDPROPS="$(sed -n '4,$ p' $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID)"
 	  printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
 	  do
-	    PRESENT="false"
-	    printf '%s\n' "$OLDPROPS" | {
-	    while IFS= read -r lineold
-	    do
+		PRESENT="false"
+		printf '%s\n' "$OLDPROPS" | {
+		while IFS= read -r lineold
+		do
 		  if [ "$linenew" == "$lineold" ]; then
 			PRESENT="true"
 		  fi
-	    done
-	    if [ $PRESENT == "false" ]; then
-		  sed -i -e "\$a$linenew" $MOUNTPATH/.core/props/$AUDMODLIBID.prop
-	    fi
+		done
+		if [ $PRESENT == "false" ]; then
+		  sed -i -e "\$a$linenew" $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID
+		fi
 	   }
 	  done
-    fi
+	fi
   else
     ui_print "    No build props to add!..."
   fi
