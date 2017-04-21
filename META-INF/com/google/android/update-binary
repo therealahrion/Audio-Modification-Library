@@ -241,6 +241,105 @@ script_install_logic() {
   ########## ^ DO NOT REMOVE ^ ##########
 }
 
+unified_prop_removal() {
+  if [ "$MAGISK" == true ]; then
+	rm -f $SYSTEM/etc/init.d/$AUDMODLIBID
+	rm -f /su/su.d/$AUDMODLIBID.sh
+	rm -f $SYSTEM/su.d/$AUDMODLIBID.sh
+	AMLPROP="$AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID"
+	if [ -e $AMLPROP ]; then
+	  if [ "$(sed -n '4,$p' $INSTALLER/common/$AUDMODLIBID-props-remove.prop)" ]; then
+	    ui_print "   Removing obsolete props..."
+	    NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props-remove.prop)"
+	    printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
+	    do
+	      if [ "$(cat $AMLPROP | grep "$linenew")" ]; then
+		    sed -i "/$linenew/d" $AMLPROP
+	     fi
+	    done
+	  fi
+	  if [ "$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $AMLPROP) + 1)" == "$(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $AMLPROP)" ]; then
+	    rm -f $AMLPROP
+	  fi
+	else
+	  ui_print "   No obsolete props to remove!..."
+	fi
+  else
+	script_install_logic
+	AMLPROP="$SH/$AUDMODLIBID$EXT"
+	for AMLSCRIPT in $SYSTEM/etc/init.d/$AUDMODLIBID /su/su.d/$AUDMODLIBID.sh $SYSTEM/su.d/$AUDMODLIBID.sh; do
+	  if [ "$AMLPROP" != "$AMLSCRIPT" ]; then
+		rm -f $AMLSCRIPT
+	  else
+	    if [ -e $AMLPROP ]; then
+	      if [ "$(sed -n '4,$p' $INSTALLER/common/$AUDMODLIBID-props-remove.prop)" ]; then
+		    ui_print "   Removing obsolete props..."
+	        NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props-remove.prop)"
+		    printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
+			do
+			  if [ "$(cat $AMLPROP | grep "$linenew")" ]; then
+		        sed -i "/$linenew/d" $AMLPROP
+			  fi
+			done
+		  fi
+		  if [ "$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $AMLPROP) + 1)" == "$(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $AMLPROP)" ]; then
+		    rm -f $AMLPROP
+		  fi
+		else
+		  ui_print "   No obsolete props to remove!..."
+		fi
+	  fi
+	done
+  fi
+}
+
+unified_prop_copy() {
+  if [ "$MAGISK" == true ]; then
+    AMLPROP="$AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID"
+	OLDPROPS="$(sed -n '4,$ p' $AMLPROP)"
+	NEWDIR="$AUDMODLIBPATH$SYSTEM/su.d"
+	#ADDCOM="sed -i -e \"\$a$linenew\" $AMLPROP"
+  else
+    AMLPROP="$SH/$AUDMODLIBID$EXT"
+	OLDPROPBEGLINE="$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $SH/$AUDMODLIBID$EXT) + 1)"
+	OLDPROPENDLINE="$(expr $(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $SH/$AUDMODLIBID$EXT) - 1)"
+	OLDPROPS="$(sed -n "$OLDPROPBEGLINE,$OLDPROPENDLINE p" $SH/$AUDMODLIBID$EXT)"
+    NEWDIR="$SH"
+	#ADDCOM="sed -i \"/\^ PROP LOCATION DO NOT REMOVE \^/ i$linenew\" $AMLPROP"
+  fi
+  
+  if [ "$(sed -n '4,$p' $AMLPROP)" ]; then
+    ui_print "   Adding build props..."
+	if [ ! -f $AMLPROP ]; then
+		mkdir -p $NEWDIR
+		cp -af $INSTALLER/common/$AUDMODLIBID-props.prop $AMLPROP
+	else
+	  NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"
+	  printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
+	  do
+		PRESENT="false"
+		printf '%s\n' "$OLDPROPS" | {
+		while IFS= read -r lineold
+		do
+		  if [ "$linenew" == "$lineold" ]; then
+			PRESENT="true"
+		  fi
+		done
+		if [ $PRESENT == "false" ]; then
+		  if [ "$MAGISK" == true ]; then
+			sed -i -e "\$a$linenew" $AMLPROP
+		  else
+		    sed -i "/\^ PROP LOCATION DO NOT REMOVE \^/ i$linenew" $AMLPROP
+		  fi
+		fi
+	   }
+	  done
+	fi
+  else
+    ui_print "   No build props to add!..."
+  fi
+}
+
 unified_mod_wipe() {
   ########################################################################################
   # Wipe before System install
@@ -250,6 +349,7 @@ unified_mod_wipe() {
   #### CLEANING UP ####
   ui_print " "
   ui_print "- Cleaning up previous installations -"
+  unified_prop_removal				  
   ########## ^ DO NOT REMOVE ^ ##########
 
   #### v INSERT YOUR FILE REMOVALS v ####
@@ -283,12 +383,12 @@ unified_mod_directory() {
   
   if [ "$MAGISK" == true ]; then
     rm -rf $MODPATH 2>/dev/null
+	mkdir -p $MODPATH				 
   fi
   ########## ^ DO NOT REMOVE ^ ##########
 
   #### v INSERT YOUR DIRECTORY MAKING v ####
   if [ "$MAGISK" == false ]; then
-    script_install_logic
     sys_mk_ch $SH 0755
     if [ -d $SYSTEM/addon.d ]; then
       sys_mk_ch $SYSTEM/addon.d 0755
@@ -321,30 +421,6 @@ unified_mod_copy() {
 	if [ ! -f $SH/$AUDMODLIBID$EXT ]; then
 		sys_cp_ch $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $SH/$AUDMODLIBID$EXT 0644
 	fi
-	if [ "$(sed -n '4,$p' $INSTALLER/common/$AUDMODLIBID-props.prop)" ]; then
-	  ui_print "    Adding build props..."
-	  NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"
-	  OLDPROPBEGLINE="$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $SH/$AUDMODLIBID$EXT) + 1)"
-	  OLDPROPENDLINE="$(expr $(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $SH/$AUDMODLIBID$EXT) - 1)"
-	  OLDPROPS="$(sed -n "$OLDPROPBEGLINE,$OLDPROPENDLINE p" $SH/$AUDMODLIBID$EXT)"
-	  printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
-	  do
-	    PRESENT="false"
-	    printf '%s\n' "$OLDPROPS" | {
-	    while IFS= read -r lineold
-	      do
-		    if [ "$linenew" == "$lineold" ]; then
-		      PRESENT="true"
-		    fi
-	    done
-	    if [ $PRESENT == "false" ]; then
-	      sed -i "/\^ PROP LOCATION DO NOT REMOVE \^/ i$linenew" $SH/$AUDMODLIBID$EXT
-	    fi
-	    }
-	  done
-	else
-	  ui_print "    No build props to add!..."
-	fi
 
     # INSTALL ROM BACKUP SCRIPT
     if [ -d $SYSTEM/addon.d ]; then
@@ -371,34 +447,6 @@ magisk_audmodlib() {
   cp -af $INSTALLER/common/$MODID-service.sh $MOUNTPATH/.core/service.d/$MODID.sh
   mkdir -p $MOUNTPATH/.core/post-fs-data.d
   cp -af $INSTALLER/common/$AUDMODLIBID-post-fs-data.sh $MOUNTPATH/.core/post-fs-data.d/$AUDMODLIBID.sh
-  mkdir -p $MOUNTPATH/.core/props
-  if [ "$(sed -n '4,$p' $INSTALLER/common/$AUDMODLIBID-props.prop)" ]; then
-    ui_print "    Adding build props..."
-	if [ ! -f $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID ]; then
-		mkdir -p $AUDMODLIBPATH$SYSTEM/su.d
-		cp -af $INSTALLER/common/$AUDMODLIBID-props.prop $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID
-	else
-	  NEWPROPS="$(sed -n '4,$ p' $INSTALLER/common/$AUDMODLIBID-props.prop)"																															   
-	  OLDPROPS="$(sed -n '4,$ p' $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID)"
-	  printf '%s\n' "$NEWPROPS" | while IFS= read -r linenew
-	  do
-		PRESENT="false"
-		printf '%s\n' "$OLDPROPS" | {
-		while IFS= read -r lineold
-		do
-		  if [ "$linenew" == "$lineold" ]; then
-			PRESENT="true"
-		  fi
-		done
-		if [ $PRESENT == "false" ]; then
-		  sed -i -e "\$a$linenew" $AUDMODLIBPATH$SYSTEM/su.d/$AUDMODLIBID
-		fi
-	   }
-	  done
-	fi
-  else
-    ui_print "    No build props to add!..."
-  fi
 
   if [ -d /cache/magisk/audmodlib ] && [[ ! -d $AUDMODLIBPATH || ! -d /magisk/audmodlib ]]; then
     rm -rf /cache/magisk/audmodlib
@@ -450,6 +498,8 @@ magisk_audmodlib() {
     fi
   done
   
+  #unified_mod_patch
+ 
   for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE $A2DP_AUD_POL $AUD_POL $AUD_POL_CONF $AUD_POL_VOL $SUB_AUD_POL $USB_AUD_POL $V_AUD_OUT_POL $V_AUD_POL $MIX_PATH $MIX_PATH_TASH $STRIGG_MIX_PATH $STRIGG_MIX_PATH_9330 $V_MIX_PATH; do
     if [ -f $CFG ]; then
       cp -af /cache/magisk/audmodlib$CFG.bak $AUDMODLIBPATH$CFG.bak
@@ -461,6 +511,8 @@ magisk_audmodlib() {
       cp -af /cache/magisk/audmodlib$CFG $AUDMODLIBPATH$CFG
     fi
   done
+
+  set_perm_recursive  $AUDMODLIBPATH  0  0  0755  0644
 
   ui_print "   ! AudModLib framework by ahrion @ XDA !"
   ########## ^ DO NOT REMOVE ^ ##########
@@ -514,7 +566,7 @@ source config.sh
 
 INSTALLER=$TMPDIR/$MODID
 MODPATH=$MOUNTPATH/$MODID
-AUDMODLIBPATH=$MOUNTPATH/$MODID
+AUDMODLIBPATH=$MOUNTPATH/$AUDMODLIBID
 
 mkdir -p $INSTALLER
 cd $INSTALLER
@@ -593,10 +645,22 @@ if is_mounted /data; then
   if [ ! -f "/data/magisk.img" ]; then
     ui_print " "
     ui_print "   ! Magisk is not installed!"
-    ui_print "    ! Magisk is required for this mod!"
+    ui_print "    ! Installing on system!"
+	# Wipe files
+    unified_mod_wipe
+    # Install
+    system_install
+    # Create mod paths
+    unified_mod_directory
+    # Copy files
+    unified_mod_copy
+	# Copy props
+	unified_prop_copy
+    # Patch files
+    #unified_mod_patch			
     #### COMPLETING INSTALL ####
     ui_print " "
-    ui_print "    -------- INSTALLATION UNSUCCESSFUL --------"
+    ui_print "    --------- INSTALLATION SUCCESSFUL ---------"
     ui_print " "
     ui_print "Installer brought to you by ahrion @ XDA"
     ui_print " "
@@ -649,17 +713,22 @@ unified_mod_directory
 # Copy files
 unified_mod_copy
 
+# Copy props
+unified_prop_copy
+			
 # Patch files
 magisk_audmodlib
 
 # Handle replace folders
 for TARGET in $REPLACE; do
   mktouch $MODPATH$TARGET/.replace
+  mktouch $AUDMODLIBPATH$TARGET/.replace
 done
 
 # Auto Mount
 if $AUTOMOUNT; then
   mktouch $MODPATH/auto_mount
+  mktouch $AUDMODLIBPATH/auto_mount
 fi
 
 # prop files
@@ -669,10 +738,13 @@ fi
 
 # Module info
 cp -af $INSTALLER/module.prop $MODPATH/module.prop
+cp -af $INSTALLER/common/audmodlibmodule.prop $AUDMODLIBPATH/module.prop
 if $BOOTMODE; then
   # Update info for Magisk Manager
   mktouch /magisk/$MODID/update
+  mktouch /magisk/$AUDMODLIBID/update
   cp -af $INSTALLER/module.prop /magisk/$MODID/module.prop
+  cp -af $INSTALLER/common/audmodlibmodule.prop /magisk/$AUDMODLIBID/module.prop
 fi
 
 # post-fs-data mode scripts
