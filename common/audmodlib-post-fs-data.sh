@@ -75,6 +75,10 @@ else
   else
     SOURCE=system_app
   fi
+  
+  #### v PROP LOCATION DO NOT REMOVE v ####
+	#setprop name.of.prop value
+  #### ^ PROP LOCATION DO NOT REMOVE ^ ####
 
   $SEINJECT --live "allow audioserver audioserver_tmpfs file { read write execute }" \
   "allow audioserver system_file file { execmod }" \
