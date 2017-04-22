@@ -258,7 +258,7 @@ unified_prop_removal() {
 	     fi
 	    done
 	  fi
-	  if [ "$(expr $(sed -n '/v PROP LOCATION DO NOT REMOVE v/=' $AMLPROP) + 1)" == "$(sed -n '/\^ PROP LOCATION DO NOT REMOVE \^/=' $AMLPROP)" ]; then
+	  if [ ! -s "$AMLPROP" ]; then
 	    rm -f $AMLPROP
 	  fi
 	else
@@ -308,7 +308,7 @@ unified_prop_copy() {
 	#ADDCOM="sed -i \"/\^ PROP LOCATION DO NOT REMOVE \^/ i$linenew\" $AMLPROP"
   fi
   
-  if [ "$(sed -n '4,$p' $AMLPROP)" ]; then
+  if [ "$(sed -n '4,$p' $INSTALLER/common/$AUDMODLIBID-props.prop)" ]; then
     ui_print "   Adding build props..."
 	if [ ! -f $AMLPROP ]; then
 		mkdir -p $NEWDIR
@@ -646,10 +646,10 @@ if is_mounted /data; then
     ui_print " "
     ui_print "   ! Magisk is not installed!"
     ui_print "    ! Installing on system!"
-	# Wipe files
-    unified_mod_wipe
     # Install
     system_install
+	# Wipe files
+    unified_mod_wipe		 			
     # Create mod paths
     unified_mod_directory
     # Copy files
@@ -701,11 +701,11 @@ if ! is_mounted $MOUNTPATH; then
   exit 1
 fi
 
-# Wipe files
-unified_mod_wipe
-
 # Prepare install
 magisk_install
+
+# Wipe files
+unified_mod_wipe
 
 # Create mod paths
 unified_mod_directory
