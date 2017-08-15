@@ -8,6 +8,16 @@ AudModLib is a framework that allows the seamless integration of multiple audio 
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
+v1.5
+	- Update sepolicy for magisk 13
+	- Add unity system props
+	- Added file backup/restore of modified files
+	- Added vendor fix for nexus devices
+	- Added system_root support for pixel devices
+	- Added phh superuser and LOS su support (note, LOS doesn't support sepolicy patching)
+	- Added support for magisk imgs located in /cache/audmodlib
+	- Added @Osm0sis at xda-developers uninstaller idea (just add "uninstall" to zip name and it'll function as uninstaller)
+	
 v1.4
 	- Change SELinux live patching to allow better compatibility between different devices, kernels, and roms; while also keeping the amount of "allowances" to a minumum
 	- Changed post-fs-data(.d)/service(.d) shell script names for cosmetic recognition
