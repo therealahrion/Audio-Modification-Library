@@ -17,6 +17,8 @@ v1.5
 	- Added phh superuser and LOS su support (note, LOS doesn't support sepolicy patching)
 	- Added support for magisk imgs located in /cache/audmodlib
 	- Added @Osm0sis at xda-developers uninstaller idea (just add "uninstall" to zip name and it'll function as uninstaller)
+	- Added autouninstall (if mod is already installed and you flash same version zip again, it'll uninstall)
+	- Added system override (if you're on magisk but would rather have it install to system, add word "system" to zip name and it'll install everything but scripts to system)
 	
 v1.4
 	- Change SELinux live patching to allow better compatibility between different devices, kernels, and roms; while also keeping the amount of "allowances" to a minumum
