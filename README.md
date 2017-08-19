@@ -19,8 +19,8 @@ v1.5
 	- Added @Osm0sis at xda-developers uninstaller idea (just add "uninstall" to zip name and it'll function as uninstaller)
 	- Added autouninstall (if mod is already installed and you flash same version zip again, it'll uninstall)
 	- Added system override (if you're on magisk but would rather have it install to system, add word "system" to zip name and it'll install everything but scripts to system)
-	- Audmodlib v1.5: Added file/folder backup/restore of normally wiped files
-	- Audmodlib v1.5: New modular approach - no need to modify update-binary anymore
+	- Added file/folder backup/restore of normally wiped files
+	- New modular approach - no need to modify update-binary anymore
 	
 v1.4
 	- Change SELinux live patching to allow better compatibility between different devices, kernels, and roms; while also keeping the amount of "allowances" to a minumum
