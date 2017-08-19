@@ -3,7 +3,7 @@ AudModLib is a framework that allows the seamless integration of multiple audio 
 
 ## Compatibility
 * Android Lollipop+
-* Magisk install (MagiskSU/SuperSU)
+* Magisk install (MagiskSU)
 * Pixel support
 * Works with nearly every device, kernel, and rom
 
