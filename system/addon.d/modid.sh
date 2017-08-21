@@ -1,12 +1,10 @@
 #!/sbin/sh
-# 
-# /system/addon.d/audmodlib.sh
 #
 
 . /tmp/backuptool.functions
 
 #### v INSERT YOUR CONFIG.SH MODID v ####
-MODID=audmodlib
+MODID=<MODID>
 AUDMODLIBID=audmodlib
 #### ^ INSERT YOUR CONFIG.SH MODID ^ ####
 
@@ -85,6 +83,6 @@ case "$1" in
 	# Stub
   ;;
   post-restore)
-	# Stub
+    <PATCHES>
   ;;
 esac

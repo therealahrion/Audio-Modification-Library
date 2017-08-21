@@ -50,11 +50,11 @@ LATESTARTSERVICE=false
 print_modname() {
   ui_print " "
   ui_print "      ****************************************"
-  ui_print "      *      Audio Modification Library      *"
+  ui_print "      *<name>*"
   ui_print "      ****************************************"
-  ui_print "      *         Universal - Patcher          *"
-  ui_print "      *             Version 1.5              *"
-  ui_print "      *         by ahrion, zackptg5          *"
+  ui_print "      *          Universal - Patcher          *"
+  ui_print "      *<version>*"
+  ui_print "      *         by <author>*"
   ui_print "      ****************************************"
   ui_print " "
 }
