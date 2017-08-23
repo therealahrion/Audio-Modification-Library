@@ -6,3 +6,13 @@
 #
 #
 # ^ DO NOT MODIFY ^
+for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+  if [ -f $CFG ] && [ "$(cat $AMLPATH$CFG | grep ' proxy {#')" ]; then
+    sed -i '/proxy {/,/}/d' $AMLPATH$CFG
+  fi
+done
+for CFG in $CONFIG_FILE $HTC_CONFIG_FILE $OTHER_V_FILE $OFFLOAD_CONFIG $V_CONFIG_FILE; do
+  if [ -f $CFG ] && [ ! "$(cat $AMLPATH$CFG | grep ' proxy {')" ]; then
+    sed -i 's/^libraries {/libraries {\n  proxy {#\n    path \/system\/lib\/soundfx\/libeffectproxy.so\n  }/g' $AMLPATH$CFG
+  fi
+done
