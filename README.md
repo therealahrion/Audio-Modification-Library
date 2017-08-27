@@ -21,6 +21,7 @@ v1.5
 	- Added system override (if you're on magisk but would rather have it install to system, add word "system" to zip name and it'll install everything but scripts to system)
 	- Added file/folder backup/restore of normally wiped files
 	- New modular approach - no need to modify update-binary anymore
+	- Removed cache workaround
 	
 v1.4
 	- Change SELinux live patching to allow better compatibility between different devices, kernels, and roms; while also keeping the amount of "allowances" to a minumum
