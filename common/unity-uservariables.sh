@@ -6,3 +6,4 @@
 # ^ DO NOT MODIFY ^
 #MINAPI=21
 AUDMODLIB=true
+MODID=audmodlib
