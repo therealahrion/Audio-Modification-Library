@@ -7,6 +7,7 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * MagiskSU & SuperSU
 * Magisk & System install
 * Nexus/Pixel support (A/B OTA)
+* SELinix enforcing (LOS SU & rootless need permissive)
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
