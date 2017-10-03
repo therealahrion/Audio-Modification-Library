@@ -19,6 +19,7 @@ v2.1
 	- Various script fixes and improvements
 	- Fix cache system installs
 	- Added support for supersu bindsbin mode
+	- Moved scripts to post-fs-data for magisk installs, fixes some issues such as AM3D white screen on compatible devices
 
 v2.0
 	- Massive installer and script overhaul
