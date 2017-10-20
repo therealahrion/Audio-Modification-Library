@@ -1,4 +1,5 @@
-# Audio Modification Library
+# Unity (Un)Installer/Audio Modification Library
+Unity (Un)Installer allows the install/uninstall of a module regardless of root method
 AudModLib is a compatibility framework that allows the seamless integration of multiple audio mods for both Magisk and System installs. [More details in support thread](https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612).
 
 ## Compatibility
