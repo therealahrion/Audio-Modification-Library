@@ -11,6 +11,15 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
+### v2.2 - 11.8.2017
+* Got rid of common aml prop file - now uses individual prop file for each mod
+* Sepolicy function fixes
+* Remove EXT variable - no need for it
+* Use /su/bin/sush shebang for scripts with systemless supersu install
+* Fix bootmode aml automount
+* Fix magisk clean flash support
+* Add AML upgrade feature
+
 ### v2.1 - 10.20.2017
 * Updated for Magisk v14.3
 * Updated to Magisk module template 1410
