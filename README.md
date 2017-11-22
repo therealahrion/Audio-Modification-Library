@@ -11,6 +11,14 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
+### v2.3 - 
+* Bug fixes and fine tuning for prop logic
+* Fix unmounting for system installs
+* Get rid of errors causeing recovery log spam
+* Add pixel 2 support (need magisk 14.5 or newer)
+* Remove all variables for conf/pol/mix files - autodetect them instead
+* General script improvements
+
 ### v2.2 - 11.8.2017
 * Got rid of common aml prop file - now uses individual prop file for each mod
 * Sepolicy function fixes
