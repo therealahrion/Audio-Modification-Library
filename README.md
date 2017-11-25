@@ -19,6 +19,8 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Remove all variables for conf/pol/mix files - autodetect them instead
 * Comment out volume_listener library instead of the entire output_session_processing
 * Remove proxy library addition from aml (mod specific)
+* Redo util_functions - use magisk one if present
+* Add magisk 14.5 support
 * General script improvements
 
 ### v2.2 - 11.8.2017
