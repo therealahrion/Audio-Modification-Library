@@ -11,6 +11,11 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
+###v2.5 - 
+* Fix conditional logic
+* Fix boot scripts
+* Fix prop install
+
 ### v2.4 - 11.30.2017
 * Fix mounting issues with Magisk v14.0
 * Streamlined some of the code
