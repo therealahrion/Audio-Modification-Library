@@ -16,6 +16,7 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Fix boot scripts
 * Fix prop install
 * Concatentate and reorganize update-binary
+* Got rid to separate xml patch files - have them be within a conditional in the corresponding aml_patch file
 
 ### v2.4 - 11.30.2017
 * Fix mounting issues with Magisk v14.0
