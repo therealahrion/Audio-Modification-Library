@@ -17,7 +17,8 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Fix prop install
 * Concatentate and reorganize update-binary
 * Got rid to separate xml patch files - have them be within a conditional in the corresponding aml_patch file
-* Added audio_effects xml files to CFGS array - hopefully adds compatibility for pixel 2
+* Add some new variables and functionality so apps and libs will be installed to vendor if rom is oreo or newer
+* Added audio_effects xml files to CFGS array - along with previous point, should add pixel 2 compatibility
 
 ### v2.4 - 11.30.2017
 * Fix mounting issues with Magisk v14.0
