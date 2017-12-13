@@ -11,7 +11,7 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
-###v2.5 - 
+###v2.5 - 12.13.2017
 * Fix conditional logic
 * Fix boot scripts
 * Fix prop install
@@ -20,6 +20,7 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Add some new variables and functionality so apps and libs will be installed to vendor if rom is oreo or newer
 * Added audio_effects xml files to CFGS array - along with previous point, should add pixel 2 compatibility'
 * Added new sepolicy patch needed for oreo
+* Replace sepolicy patches with "setenforce 0" if oos oreo is detected - temporary workaround for now
 
 ### v2.4 - 11.30.2017
 * Fix mounting issues with Magisk v14.0
