@@ -11,7 +11,7 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
-### v2.6 - 
+### v2.6 - 12.25.2017
 * Move sepolicy out of aml and into individual modules
 * Fix and improve aml boot script
 * Update binary with v1500 magisk template - now only compatible with magisk v15+
