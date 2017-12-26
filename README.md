@@ -16,7 +16,7 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Fix and improve aml boot script
 * Update binary with v1500 magisk template - now only compatible with magisk v15+
 
-###v2.5 - 12.13.2017
+### v2.5 - 12.13.2017
 * Fix conditional logic
 * Fix boot scripts
 * Fix prop install
