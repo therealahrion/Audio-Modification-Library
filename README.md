@@ -11,6 +11,9 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
+### v2.8 - 
+* Script improvements
+
 ### v2.7 - 12.26.2017
 * Fixed lib patching bug with oreo devices that don't have a separate vendor partition
 * Fixed but in magisk module template in which it doesn't properly detect older versions of magisk
