@@ -16,7 +16,7 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Merged unity-wipe function with rest of installer - TIMEOFEXEC=1 still runs at the same time though so customrules aren't change
 * Copy system audio_effects cfg to vendor if missing
 * Add device_check function
-* Comment out music section of output_session_processing instead of entire volume listener library
+* Comment out music_helper effect instead of entire volume listener library
 
 ### v2.8 - 12.29.2017
 * Script improvements
