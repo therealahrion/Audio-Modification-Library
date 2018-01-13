@@ -11,8 +11,8 @@ AudModLib is a compatibility framework that allows the seamless integration of m
 * Works with nearly every device, kernel, and rom
 
 ## Change Log
-### v2.9 - 
-* Changed copy functions (CP_PRFX and CP_NBPRFX) so it works with partitions other than system and vendor. UNITY variable no longer needed when the CP prefixes are used
+### v2.9 - 1.12.2018
+* Changed copy functions (CP_PRFX and CP_NBPRFX) so it works with partitions other than system and vendor. UNITY variable no longer needed adns shouldn't be used when the CP prefixes are used
 * Merged unity-wipe function with rest of installer - TIMEOFEXEC=1 still runs at the same time though so customrules aren't change
 * Copy system audio_effects cfg to vendor if missing
 * Add device_check function
