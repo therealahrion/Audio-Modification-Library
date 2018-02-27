@@ -1,3 +1,5 @@
+# This is the Old AML. It's just left as as reference for now
+
 # Audio Modification Library Template
 AudModLib is a compatibility framework that allows the seamless integration of multiple audio mods for both Magisk and System installs. [More details in support thread](https://forum.xda-developers.com/apps/magisk/module-audio-modification-library-t3579612).
 
